@@ -131,6 +131,7 @@ public:
     , m_subscribeCmdHover()
     , m_subscribeCmdStop()
     , m_subscribeCmdPosition()
+    //, m_subscribeCmdPwm()
     , m_subscribeExternalPosition()
     , m_pubImu()
     , m_pubTemp()
@@ -248,16 +249,32 @@ void cmdPositionSetpoint(
     const crazyflie_driver::Position::ConstPtr& msg)
   {
     if(!m_isEmergency) {
-      float x = msg->x;
-      float y = msg->y;
-      float z = msg->z;
-      float yaw = msg->yaw;
+      float pwm1 = msg->pwm1;
+      float pwm2 = msg->pwm2;
+      float pwm3 = msg->pwm3;
+      float pwm4 = msg->pwm4;
+      float pwm5 = msg->pwm5;
+      float pwm6 = msg->pwm6;
 
-      m_cf.sendPositionSetpoint(x, y, z, yaw);
+      m_cf.sendPositionSetpoint(pwm1,pwm2,pwm3,pwm4,pwm5,pwm6);
       m_sentSetpoint = true;
     }
   }
+/*
+void cmdPwm(
+    const crazyflie_driver::pwm::ConstPtr& msg)
+  {
+    if(!m_isEmergency) {
+      float m1 = msg->pwm1;
+      float m2 = msg->pwm2;
+      float m3 = msg->pwm3;
+      float m4 = msg->pwm4;
 
+      m_cf.sendPwm(m1, m2, m3, m4);
+      m_sentSetpoint = true;
+    }
+  }
+*/
   bool updateParams(
     crazyflie_driver::UpdateParams::Request& req,
     crazyflie_driver::UpdateParams::Response& res)
@@ -380,7 +397,7 @@ void cmdPositionSetpoint(
     m_subscribeCmdHover = n.subscribe(m_tf_prefix + "/cmd_hover", 1, &CrazyflieROS::cmdHoverSetpoint, this);
     m_subscribeCmdStop = n.subscribe(m_tf_prefix + "/cmd_stop", 1, &CrazyflieROS::cmdStop, this);
     m_subscribeCmdPosition = n.subscribe(m_tf_prefix + "/cmd_position", 1, &CrazyflieROS::cmdPositionSetpoint, this);
-
+   // m_subscribeCmdPwm = n.subscribe(m_tf_prefix + "/cmd_pwm", 1, &CrazyflieROS::cmdPwm, this);
 
     m_serviceSetGroupMask = n.advertiseService(m_tf_prefix + "/set_group_mask", &CrazyflieROS::setGroupMask, this);
     m_serviceTakeoff = n.advertiseService(m_tf_prefix + "/takeoff", &CrazyflieROS::takeoff, this);
