@@ -7,20 +7,28 @@ from std_msgs.msg import Empty
 from crazyflie_driver.srv import UpdateParams
 
 if __name__ == '__main__':
-    rospy.init_node('position', anonymous=True)
+    rospy.init_node('pwm', anonymous=True)
     worldFrame = rospy.get_param("~worldFrame", "/world")
+
+    pwm1 = rospy.get_param("~pwm1")
+    pwm2 = rospy.get_param("~pwm2")
+    pwm3 = rospy.get_param("~pwm3")
+    pwm4 = rospy.get_param("~pwm4")
+    pwm5 = rospy.get_param("~pwm5")
+    pwm6 = rospy.get_param("~pwm6")
 
     rate = rospy.Rate(10) # 10 hz
     name = "cmd_position"
-
     msg = Position()
     msg.header.seq = 0
     msg.header.stamp = rospy.Time.now()
     msg.header.frame_id = worldFrame
-    msg.x = 0.0
-    msg.y = 0.0
-    msg.z = 0.0
-    msg.yaw = 0.0
+    msg.pwm1 = pwm1
+    msg.pwm2 = pwm2
+    msg.pwm3 = pwm3
+    msg.pwm4 = pwm4
+    msg.pwm5 = pwm5
+    msg.pwm6 = pwm6
 
     pub = rospy.Publisher(name, Position, queue_size=1)
 
@@ -31,86 +39,30 @@ if __name__ == '__main__':
     rospy.loginfo("found update_params service")
     update_params = rospy.ServiceProxy('update_params', UpdateParams)
 
-    rospy.set_param("kalman/resetEstimation", 1)
-    update_params(["kalman/resetEstimation"])
-    rospy.sleep(0.1)
-    rospy.set_param("kalman/resetEstimation", 0)
-    update_params(["kalman/resetEstimation"])
-    rospy.sleep(0.5)
-
-    # take off
-    while not rospy.is_shutdown():
-        for y in range(10):
-            msg.x = 0.0
-            msg.y = 0.0
-            msg.yaw = 0.0
-            msg.z = y / 25.0
-            now = rospy.get_time()
-            msg.header.seq += 1
-            msg.header.stamp = rospy.Time.now()
-            rospy.loginfo("sending...")
-            rospy.loginfo(msg.x)
-            rospy.loginfo(msg.y)
-            rospy.loginfo(msg.z)
-            rospy.loginfo(msg.yaw)
-            # rospy.loginfo(now)
-            pub.publish(msg)
-            rate.sleep()
-        for y in range(20):
-            msg.x = 0.0
-            msg.y = 0.0
-            msg.yaw = 0.0
-            msg.z = 0.4
-            msg.header.seq += 1
-            msg.header.stamp = rospy.Time.now()
-            rospy.loginfo("sending...")
-            rospy.loginfo(msg.x)
-            rospy.loginfo(msg.y)
-            rospy.loginfo(msg.z)
-            rospy.loginfo(msg.yaw)
-            # rospy.loginfo(now)
-            pub.publish(msg)
-            rate.sleep()
-        break
 
     # go to x: 0.2 y: 0.2
     start = rospy.get_time()
     while not rospy.is_shutdown():
-        msg.x = 0.2
-        msg.y = 0.2
-        msg.yaw = 0.0
-        msg.z = 0.4
+        msg.pwm1 = pwm1
+        msg.pwm2 = pwm2
+        msg.pwm3 = pwm3
+        msg.pwm4 = pwm4
+        msg.pwm5 = pwm5
+        msg.pwm6 = pwm6
         now = rospy.get_time()
-        if (now - start > 3.0):
+        if (now - start > 10.0):
             break
         msg.header.seq += 1
         msg.header.stamp = rospy.Time.now()
         rospy.loginfo("sending...")
-        rospy.loginfo(msg.x)
-        rospy.loginfo(msg.y)
-        rospy.loginfo(msg.z)
-        rospy.loginfo(msg.yaw)
+        rospy.loginfo(msg.pwm1)
+        rospy.loginfo(msg.pwm2)
+        rospy.loginfo(msg.pwm3)
+        rospy.loginfo(msg.pwm4)
+        rospy.loginfo(msg.pwm5)
+        rospy.loginfo(msg.pwm6)
         pub.publish(msg)
         rate.sleep()
 
-    # land, spend 1 secs
-    start = rospy.get_time()
-    while not rospy.is_shutdown():
-        msg.x = 0.0
-        msg.y = 0.0
-        msg.z = 0.0
-        msg.yaw = 0.0
-        now = rospy.get_time()
-        if (now - start > 1.0):
-            break
-        msg.header.seq += 1
-        msg.header.stamp = rospy.Time.now()
-        rospy.loginfo("sending...")
-        rospy.loginfo(msg.x)
-        rospy.loginfo(msg.y)
-        rospy.loginfo(msg.z)
-        rospy.loginfo(msg.yaw)
-        pub.publish(msg)
-        rate.sleep()
 
     stop_pub.publish(stop_msg)
